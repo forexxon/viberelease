@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vibe Release — проверка AI-продукта перед запуском</title>
+  <meta name="description" content="Проверяем AI-продукты, собранные с Cursor, Claude Code, Lovable и другими инструментами, перед реальными пользователями и деньгами. Данные, секреты, платежи, recovery и production.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://viberelease.ru/">
+  <link rel="stylesheet" href="assets/styles.css">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Vibe Release — проверь AI-продукт перед запуском">
+  <meta property="og:description" content="Не верь, что приложение готово, только потому что оно открывается. Проверим критичные сценарии перед пользователями и платежами.">
+  <meta property="og:url" content="https://viberelease.ru/">
+  <meta name="theme-color" content="#0b1020">
+  <script type="application/ld+json">{
+    "@context":"https://schema.org",
+    "@type":"Service",
+    "name":"Vibe Release Beta Gate",
+    "description":"Проверка release-readiness AI-продуктов перед реальными пользователями и платежами.",
+    "areaServed":"RU",
+    "offers":{"@type":"Offer","priceCurrency":"RUB","price":"8900"}
+  }</script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Vibe Release">
+      <span class="brand-mark">VR</span>
+      <span>Vibe Release</span>
+    </a>
+    <nav class="nav" aria-label="Главная навигация">
+      <a href="#proof">Доказательства</a>
+      <a href="#audit">Что проверяем</a>
+      <a href="#price">Beta Gate</a>
+      <a class="nav-cta" href="#apply">Проверить проект</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <div class="eyebrow">RELEASE READINESS ДЛЯ AI-ПРОДУКТОВ</div>
+        <h1>Собрал продукт с AI?<br><span>Не запускай его вслепую.</span></h1>
+        <p class="lead">Проверим ключевые сценарии перед реальными пользователями и деньгами: чужие данные, секреты, платежи, восстановление и production.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#apply">Проверить мой проект</a>
+          <a class="button ghost" href="#proof">Посмотреть LAB-кейсы</a>
+        </div>
+        <div class="trustline">
+          <span>Cursor</span><span>Claude Code</span><span>Lovable</span><span>Supabase</span><span>AI SaaS</span>
+        </div>
+      </div>
+
+      <div class="verdict-card" aria-label="Пример Release Verdict">
+        <div class="card-kicker">ПРИМЕР RELEASE VERDICT</div>
+        <div class="score-row">
+          <div>
+            <div class="score">61<span>/100</span></div>
+            <div class="muted">Release Score</div>
+          </div>
+          <div class="gate block">BLOCK</div>
+        </div>
+        <div class="finding critical"><b>CRITICAL</b><span>User B читает данные User A</span></div>
+        <div class="finding high"><b>HIGH</b><span>Server secret найден в Git history</span></div>
+        <div class="finding high"><b>HIGH</b><span>Webhook повторяет fulfillment</span></div>
+        <div class="finding pass"><b>PASS</b><span>Owner сохраняет доступ к своим данным</span></div>
+        <p class="tiny">READY означает только прохождение согласованного scope, а не гарантию абсолютной безопасности.</p>
+      </div>
+    </section>
+
+    <section class="problem-band">
+      <div class="shell problem-grid">
+        <div><strong>Прототип работает</strong><span>но это ещё не production</span></div>
+        <div><strong>AI пишет быстро</strong><span>но не несёт ответственность за release</span></div>
+        <div><strong>Мы проверяем результат</strong><span>а не наличие красивых настроек</span></div>
+      </div>
+    </section>
+
+    <section id="proof" class="section shell">
+      <div class="section-head">
+        <div class="eyebrow">PROOF PORTFOLIO</div>
+        <h2>Не верь нам на слово.<br>Вот что мы уже воспроизвели.</h2>
+        <p>Первые кейсы — лабораторные. Мы не выдаём их за клиентские работы. Каждый результат получен воспроизводимым тестом и имеет чёткую границу доказательства.</p>
+      </div>
+
+      <div class="lab-grid">
+        <article class="lab-card featured">
+          <div class="lab-top"><span>LAB-02</span><span class="verified">SUPABASE VERIFIED</span></div>
+          <h3>User B получил данные User A</h3>
+          <p>На live Supabase воспроизвели cross-user READ / UPDATE / DELETE, затем заменили RLS на ownership-policy и повторили те же тесты.</p>
+          <div class="before-after">
+            <div><small>ДО</small><b class="bad">1 / 1 / 1</b><span>чужие операции прошли</span></div>
+            <div><small>ПОСЛЕ</small><b class="good">0 / 0 / 0</b><span>чужих строк затронуто</span></div>
+          </div>
+        </article>
+
+        <article class="lab-card">
+          <div class="lab-top"><span>LAB-04</span><span>PAYMENTS</span></div>
+          <h3>Один webhook — двойная выдача</h3>
+          <p>Уязвимая логика дважды выполнила fulfillment и дважды учла выручку при повторной доставке события.</p>
+          <div class="metric"><b class="bad">2×</b><span>до</span><b class="good">1×</b><span>после</span></div>
+        </article>
+
+        <article class="lab-card">
+          <div class="lab-top"><span>LAB-03</span><span>SECRETS</span></div>
+          <h3>Ключ удалили. Утечка осталась.</h3>
+          <p>После удаления секрета из текущего файла он продолжал находиться в Git history. После cleanup повторный scan дал 0 совпадений.</p>
+          <div class="metric"><b class="bad">FOUND</b><span>history</span><b class="good">0</b><span>после cleanup</span></div>
+        </article>
+
+        <article class="lab-card">
+          <div class="lab-top"><span>LAB-01</span><span>RECOVERY</span></div>
+          <h3>Незакоммиченная работа исчезла</h3>
+          <p>Destructive Git-команда уничтожила незаписанные изменения с точки зрения Git. Committed checkpoint восстановили точно по SHA-256.</p>
+          <div class="metric"><b class="bad">LOST</b><span>без checkpoint</span><b class="good">EXACT</b><span>с checkpoint</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="audit" class="section dark-section">
+      <div class="shell">
+        <div class="section-head narrow">
+          <div class="eyebrow">VIBE RELEASE STANDARD</div>
+          <h2>Мы не «смотрим код».<br>Мы пытаемся сломать важные сценарии.</h2>
+        </div>
+        <div class="check-grid">
+          <div class="check"><span>01</span><div><b>Users & Auth</b><p>Anonymous, сессии, роли, User A ↔ User B.</p></div></div>
+          <div class="check"><span>02</span><div><b>Data & RLS</b><p>Чтение, изменение, удаление чужих данных, RPC и views.</p></div></div>
+          <div class="check"><span>03</span><div><b>Secrets</b><p>Frontend bundle, source tree, Git history, privileged keys.</p></div></div>
+          <div class="check"><span>04</span><div><b>Payments</b><p>Retry, duplicate webhook, amount/order, refund, idempotency.</p></div></div>
+          <div class="check"><span>05</span><div><b>Recovery</b><p>Known-good checkpoint, backup, restore и rollback path.</p></div></div>
+          <div class="check"><span>06</span><div><b>Production</b><p>Deploy, environment, logs, controlled failures, monitoring.</p></div></div>
+          <div class="check"><span>07</span><div><b>Abuse & Cost</b><p>Rate limits, quotas, runaway retries и неожиданные API-счета.</p></div></div>
+          <div class="check"><span>08</span><div><b>RF Technical Map</b><p>Где живут данные и куда они уходят. Это не юридическое заключение.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="price" class="section shell pricing-section">
+      <div class="section-head narrow">
+        <div class="eyebrow">ПЕРВЫЕ 5 МЕСТ</div>
+        <h2>Vibe Release Beta Gate</h2>
+        <p>Не полный pentest. Не безлимитный code review. Проверка 12–15 наиболее критичных сценариев именно вашего проекта.</p>
+      </div>
+
+      <div class="pricing-card">
+        <div class="price-side">
+          <div class="beta-chip">BETA</div>
+          <div class="price">8 900 <span>₽</span></div>
+          <p>за один согласованный scope</p>
+          <a class="button primary wide" href="#apply">Забронировать Beta Gate</a>
+          <small>Цена — гипотеза первых продаж и может измениться после 5 beta-аудитов.</small>
+        </div>
+        <div class="scope-side">
+          <h3>Что входит</h3>
+          <ul>
+            <li>1 приложение / 1 repo</li>
+            <li>до 2 основных пользовательских ролей</li>
+            <li>1 основная БД</li>
+            <li>1 платёжная интеграция</li>
+            <li>12–15 релевантных MUST PASS тестов</li>
+            <li>Release Verdict: BLOCK / LIMITED / READY</li>
+            <li>Evidence + приоритет исправлений</li>
+            <li>1 разбор + 1 retest Critical/High</li>
+          </ul>
+          <div class="not-included"><b>Не входит:</b> полноценный pentest, DDoS/load testing, юридическое заключение и исправление всех findings.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section methodology">
+      <div class="shell methodology-grid">
+        <div>
+          <div class="eyebrow">КАК РАБОТАЕТ FINDING</div>
+          <h2>Каждая проблема должна быть доказана.</h2>
+        </div>
+        <div class="finding-template">
+          <div><span>TEST ID</span><b>VR-AUTHZ-001</b></div>
+          <div><span>EXPECTED</span><b>User B не видит запись A</b></div>
+          <div><span>ACTUAL</span><b class="bad-text">API вернул чужую запись</b></div>
+          <div><span>EVIDENCE</span><b>request / response / log</b></div>
+          <div><span>FIX</span><b>конкретное изменение</b></div>
+          <div><span>RETEST</span><b class="good-text">PASS</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="apply" class="section apply-section">
+      <div class="shell apply-grid">
+        <div>
+          <div class="eyebrow">BETA APPLICATION</div>
+          <h2>Покажи проект.<br>Скажем, подходит ли он для Beta Gate.</h2>
+          <p>Сначала коротко смотрим scope. Если проект не подходит под beta-формат, не продаём аудит любой ценой.</p>
+          <div class="privacy-note">Не присылайте пароли, service-role keys, токены и другие секреты через форму.</div>
+        </div>
+
+        <form id="lead-form" class="lead-form" novalidate>
+          <label>Ссылка на продукт или репозиторий
+            <input name="project" type="text" placeholder="https://... или пока локально" required>
+          </label>
+          <label>На чём собран
+            <select name="stack" required>
+              <option value="">Выбрать</option>
+              <option>Cursor</option>
+              <option>Claude Code</option>
+              <option>Lovable</option>
+              <option>Replit</option>
+              <option>Другое / несколько</option>
+            </select>
+          </label>
+          <div class="two-cols">
+            <label>Есть регистрация?
+              <select name="auth"><option>Да</option><option>Нет</option><option>Не знаю</option></select>
+            </label>
+            <label>Есть платежи?
+              <select name="payments"><option>Да</option><option>Нет</option><option>Планирую</option></select>
+            </label>
+          </div>
+          <label>Что беспокоит больше всего?
+            <textarea name="pain" rows="4" placeholder="Например: боюсь, что пользователи увидят чужие данные или платежи сработают дважды" required></textarea>
+          </label>
+          <label>Telegram для связи
+            <input name="contact" type="text" placeholder="@username" required>
+          </label>
+          <button class="button primary wide" type="submit">Отправить заявку</button>
+          <p id="form-status" class="form-status" role="status" aria-live="polite">Форма будет активирована перед публикацией сайта.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer-inner">
+      <div><b>Vibe Release</b><span>Проверка AI-продуктов перед release.</span></div>
+      <div class="footer-links"><a href="#proof">LAB</a><a href="#audit">Standard</a><a href="#apply">Beta</a></div>
+      <div class="tiny">Не является гарантией безопасности, полноценным pentest или юридическим заключением.</div>
+    </div>
+  </footer>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
