@@ -1,1 +1,8 @@
-document.addEventListener('DOMContentLoaded',()=>{const form=document.getElementById('lead-form');const status=document.getElementById('form-status');if(!form)return;form.addEventListener('submit',e=>{e.preventDefault();if(!form.checkValidity()){form.reportValidity();return;}status.textContent='Заявка пока не отправлена: подключаем канал приёма заявок перед публикацией.';status.style.color='#ffb454';});});
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) target.setAttribute('tabindex', '-1');
+    });
+  });
+});
