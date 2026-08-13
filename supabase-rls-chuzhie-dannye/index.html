@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supabase RLS: как запретить пользователю видеть чужие данные — Vibe Release</title>
+  <meta name="description" content="Разбираем на тестовом проекте Supabase, как один пользователь получил доступ к данным другого, как это связано с RLS и что показала повторная проверка после исправления.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://viberelease.ru/supabase-rls-chuzhie-dannye/">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <meta name="theme-color" content="#08111F">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="Supabase RLS: как запретить пользователю видеть чужие данные">
+  <meta property="og:description" content="Тестовый сценарий: второй пользователь смог читать, изменять и удалять чужую запись. После исправления повторили те же проверки.">
+  <meta property="og:url" content="https://viberelease.ru/supabase-rls-chuzhie-dannye/">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Supabase RLS: как запретить пользователю видеть чужие данные",
+    "description": "Разбор тестового сценария доступа между пользователями в Supabase с повторной проверкой после исправления.",
+    "author": {"@type": "Organization", "name": "Vibe Release"},
+    "publisher": {"@type": "Organization", "name": "Vibe Release", "url": "https://viberelease.ru/"},
+    "mainEntityOfPage": "https://viberelease.ru/supabase-rls-chuzhie-dannye/"
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержанию</a>
+
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="/" aria-label="Vibe Release — на главную">
+        <img src="/assets/logo.svg" width="38" height="38" alt="" aria-hidden="true">
+        <span>Vibe Release</span>
+      </a>
+      <nav class="nav" aria-label="Навигация">
+        <a href="/#proof">Примеры</a>
+        <a href="/#checks">Что проверяем</a>
+        <a href="/#price">Стоимость</a>
+        <a class="nav-cta" href="https://t.me/mausharov">Проверить проект</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="section shell">
+      <header class="section-head">
+        <p class="eyebrow">SUPABASE · ДОСТУП К ДАННЫМ</p>
+        <h1>Supabase RLS: как запретить пользователю видеть чужие данные</h1>
+        <p>Работающая авторизация ещё не гарантирует изоляцию данных. На собственном тестовом проекте мы проверили сценарий с двумя пользователями и получили доступ второго пользователя к записи первого.</p>
+      </header>
+
+      <article class="proof-card proof-card-wide">
+        <div class="proof-meta"><span>ТЕСТОВЫЙ ПРОЕКТ</span><span>Supabase</span></div>
+        <h2>Что произошло</h2>
+        <p>Создали две отдельные пользовательские сессии: пользователь A владеет записью, пользователь B не должен иметь к ней доступа. Под сессией B повторили чтение, изменение и удаление записи A.</p>
+        <div class="before-after">
+          <div class="result-box result-before">
+            <span>ДО ИСПРАВЛЕНИЯ</span>
+            <strong>1 / 1 / 1</strong>
+            <small>чтение / изменение / удаление чужой записи</small>
+          </div>
+          <div class="result-arrow" aria-hidden="true">→</div>
+          <div class="result-box result-after">
+            <span>ПОСЛЕ</span>
+            <strong>0 / 0 / 0</strong>
+            <small>чужих строк затронуто</small>
+          </div>
+        </div>
+        <p class="fineprint">Этот результат относится только к нашему тестовому сценарию. Он не означает, что любая конфигурация Supabase имеет такую же проблему.</p>
+      </article>
+    </section>
+
+    <section class="section section-dark">
+      <div class="shell">
+        <header class="section-head narrow">
+          <p class="eyebrow">ПОЧЕМУ ТАК ПРОИСХОДИТ</p>
+          <h2>RLS отвечает за то, какие строки базы доступны конкретному запросу.</h2>
+          <p>В Supabase таблицы, доступные через Data API, защищают правила Row Level Security. Если правило разрешает слишком широкий доступ или неправильно связывает строку с текущим пользователем, сама успешная авторизация не спасает от доступа к чужим данным.</p>
+        </header>
+
+        <div class="checks-grid">
+          <article class="check-card"><span>01</span><h3>Есть пользователь</h3><p>Человек успешно вошёл в аккаунт и получил собственную сессию.</p></article>
+          <article class="check-card"><span>02</span><h3>Есть запись другого</h3><p>В базе существует строка, владельцем которой является другой пользователь.</p></article>
+          <article class="check-card"><span>03</span><h3>Есть запрос</h3><p>Проверяем не интерфейс, а фактический ответ базы под JWT второго пользователя.</p></article>
+          <article class="check-card"><span>04</span><h3>Есть политика</h3><p>Именно правило доступа должно оставить B только его собственные строки.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell">
+      <header class="section-head narrow">
+        <p class="eyebrow">КАК ИСПРАВИЛИ В ТЕСТЕ</p>
+        <h2>Связали доступ с владельцем записи.</h2>
+        <p>В нашем тестовом сценарии условие политики проверяло соответствие текущего пользователя владельцу строки через <code>auth.uid()</code> и поле <code>user_id</code>. После изменения мы не остановились на просмотре SQL — повторили исходные запросы под пользователем B.</p>
+      </header>
+
+      <article class="proof-card">
+        <h3>Важно проверить не только запрет</h3>
+        <p>Если после «исправления» чужие данные недоступны только потому, что перестало работать вообще всё, задача не решена. Поэтому дополнительно проверили нормальный сценарий владельца: пользователь B по-прежнему мог читать собственную запись.</p>
+        <div class="compact-result"><b class="success">1</b><span>собственная запись доступна владельцу</span></div>
+      </article>
+    </section>
+
+    <section class="section status-section">
+      <div class="shell">
+        <header class="section-head narrow">
+          <p class="eyebrow">ЧТО ПРОВЕРИТЬ У СЕБЯ</p>
+          <h2>Минимальная проверка изоляции пользователей</h2>
+        </header>
+        <div class="status-grid">
+          <article class="status-card"><h3>ЧТЕНИЕ</h3><p>Может ли пользователь B получить строку пользователя A напрямую через API.</p></article>
+          <article class="status-card"><h3>ИЗМЕНЕНИЕ</h3><p>Можно ли под B изменить существующую запись A.</p></article>
+          <article class="status-card"><h3>УДАЛЕНИЕ</h3><p>Можно ли под B удалить запись A.</p></article>
+        </div>
+        <p class="status-note">Отдельно проверяй INSERT, роли, Storage и другие таблицы, если они используются в продукте. Один успешный тест не доказывает безопасность всей системы.</p>
+      </div>
+    </section>
+
+    <section class="section shell">
+      <header class="section-head narrow">
+        <p class="eyebrow">ОФИЦИАЛЬНАЯ ДОКУМЕНТАЦИЯ</p>
+        <h2>На что опирается проверка</h2>
+        <p>Supabase рекомендует защищать доступные через API таблицы с помощью RLS и использовать политики, которые ограничивают строки текущим пользователем. Для UPDATE важны как условия доступа к существующей строке, так и проверка нового состояния строки.</p>
+      </header>
+      <div class="proof-grid">
+        <article class="proof-card"><h3>Row Level Security</h3><p>Официальная документация Supabase по включению RLS, SELECT / INSERT / UPDATE / DELETE policies и использованию <code>auth.uid()</code>.</p><p><a class="button secondary" href="https://supabase.com/docs/guides/database/postgres/row-level-security" rel="noopener noreferrer">Открыть документацию Supabase</a></p></article>
+        <article class="proof-card"><h3>Защита пользовательских таблиц</h3><p>Документация Supabase отдельно рекомендует включать RLS для пользовательских данных в публичной схеме и выдавать только необходимые права.</p><p><a class="button secondary" href="https://supabase.com/docs/guides/auth/managing-user-data" rel="noopener noreferrer">Открыть документацию Supabase</a></p></article>
+      </div>
+    </section>
+
+    <section class="section start-section">
+      <div class="shell start-card">
+        <div>
+          <p class="eyebrow">ПЕРЕД ЗАПУСКОМ</p>
+          <h2>Хочешь проверить доступ между пользователями в своём проекте?</h2>
+          <p>Сначала коротко посмотрим архитектуру и согласуем безопасный объём. Не просим основной пароль, если можно создать временный доступ и тестовых пользователей.</p>
+        </div>
+        <div class="start-state">
+          <a class="button primary button-wide" href="https://t.me/mausharov">Написать в Telegram</a>
+          <p>Telegram: <b>@mausharov</b></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer-grid">
+      <div class="footer-brand">
+        <div class="brand brand-static"><img src="/assets/logo.svg" width="34" height="34" alt=""><span>Vibe Release</span></div>
+        <p>Сначала проверка. Потом запуск.</p>
+      </div>
+      <div class="footer-links"><a href="/">Главная</a><a href="/#checks">Что проверяем</a><a href="https://t.me/mausharov">Telegram</a></div>
+      <div class="footer-note">viberelease.ru</div>
+    </div>
+  </footer>
+
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>
