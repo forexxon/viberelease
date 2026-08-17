@@ -1,0 +1,47 @@
+name: Diagnostic QA
+
+on:
+  push:
+    branches: [product-v2-feature-matrix]
+    paths:
+      - 'diagnostic/**'
+      - 'tests/**'
+      - '.github/workflows/diagnostic-qa.yml'
+  workflow_dispatch:
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install -D @playwright/test
+          npx playwright install --with-deps chromium firefox
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/vr-http.log 2>&1 &
+          echo $! > /tmp/vr-http.pid
+          sleep 2
+      - name: Run Chromium QA
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/diagnostic.spec.js --project=chromium --reporter=line
+      - name: Run Firefox QA
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/diagnostic.spec.js --project=firefox --reporter=line
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
