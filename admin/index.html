@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Vibe Release — Manager</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <style>
+    body{min-height:100vh}.admin-shell{width:min(calc(100% - 32px),1100px);margin:0 auto;padding:48px 0 80px}.admin-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:24px}.admin-head h1{font-size:clamp(32px,5vw,52px);margin:8px 0 0}.admin-auth,.admin-panel{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:22px}.admin-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px}.admin-grid input{width:100%;min-height:48px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:#0b1625;color:var(--text)}.admin-state{color:var(--muted);font-size:13px;margin:12px 0 0}.leads{display:grid;gap:12px;margin-top:20px}.lead{border:1px solid var(--border);border-radius:10px;background:#0b1625;padding:18px}.lead-top{display:flex;justify-content:space-between;gap:16px;align-items:start}.lead h2{font-size:18px;margin:0}.lead-meta{font-size:12px;color:var(--muted)}.lead-data{display:grid;grid-template-columns:160px 1fr;gap:8px 14px;margin-top:16px;font-size:13px}.lead-data b{color:var(--muted)}.lead pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;color:#c8d4e5;border-top:1px solid var(--border);padding-top:14px;margin-top:14px}.hidden{display:none!important}@media(max-width:720px){.admin-head{display:block}.admin-grid{grid-template-columns:1fr}.lead-data{grid-template-columns:1fr}.lead-data b{margin-top:8px}}
+  </style>
+</head>
+<body>
+  <main class="admin-shell">
+    <div class="admin-head">
+      <div><p class="eyebrow">Внутренний интерфейс</p><h1>Новые заявки</h1></div>
+      <a class="button secondary" href="../">На сайт</a>
+    </div>
+
+    <section class="admin-auth" id="authBox">
+      <div class="admin-grid">
+        <input id="apiUrl" type="url" autocomplete="off" placeholder="Yandex Function URL">
+        <input id="adminKey" type="password" autocomplete="current-password" placeholder="Manager access key">
+        <button class="button primary" id="loadBtn" type="button">Открыть</button>
+      </div>
+      <p class="admin-state">Ключ не записывается в GitHub и хранится только в sessionStorage этого браузера. Telegram не содержит контакты клиентов.</p>
+    </section>
+
+    <section class="admin-panel hidden" id="panel">
+      <div class="lead-top"><div><b>Последние заявки</b><div class="admin-state" id="status">Загрузка…</div></div><button class="button secondary" id="refreshBtn" type="button">Обновить</button></div>
+      <div class="leads" id="leads"></div>
+    </section>
+  </main>
+<script>
+(() => {
+  const apiUrl = document.getElementById('apiUrl');
+  const adminKey = document.getElementById('adminKey');
+  const loadBtn = document.getElementById('loadBtn');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const panel = document.getElementById('panel');
+  const status = document.getElementById('status');
+  const leads = document.getElementById('leads');
+
+  apiUrl.value = sessionStorage.getItem('vr_api_url') || '';
+  adminKey.value = sessionStorage.getItem('vr_admin_key') || '';
+
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function load() {
+    const base = apiUrl.value.trim().replace(/\/$/, '');
+    const key = adminKey.value;
+    if (!base || !key) { status.textContent = 'Нужны URL backend и ключ.'; panel.classList.remove('hidden'); return; }
+    sessionStorage.setItem('vr_api_url', base);
+    sessionStorage.setItem('vr_admin_key', key);
+    panel.classList.remove('hidden');
+    status.textContent = 'Загрузка…';
+    leads.innerHTML = '';
+    try {
+      const url = new URL(base);
+      url.searchParams.set('action','list');
+      url.searchParams.set('limit','20');
+      const res = await fetch(url, {headers:{Authorization:`Bearer ${key}`}, cache:'no-store'});
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      status.textContent = `Получено: ${data.leads.length}`;
+      leads.innerHTML = data.leads.map(card).join('') || '<p class="admin-state">Заявок пока нет.</p>';
+    } catch (e) {
+      status.textContent = `Ошибка: ${e.message}`;
+    }
+  }
+
+  function card(x) {
+    const answers = typeof x.answers_json === 'string' ? x.answers_json : JSON.stringify(x.answers_json ?? {}, null, 2);
+    return `<article class="lead">
+      <div class="lead-top"><h2>${esc(x.stage)} → ${esc(x.route)}</h2><span class="lead-meta">${esc(x.created_at)}</span></div>
+      <div class="lead-data">
+        <b>Имя</b><span>${esc(x.name)}</span>
+        <b>Контакт</b><span>${esc(x.contact)}</span>
+        <b>Проект</b><span>${x.project_url ? `<a href="${esc(x.project_url)}" target="_blank" rel="noopener noreferrer">${esc(x.project_url)}</a>` : '—'}</span>
+        <b>Комментарий</b><span>${esc(x.comment || '—')}</span>
+        <b>Active checks</b><span>${x.authorized_for_active_checks ? 'разрешены владельцем' : 'НЕ разрешены'}</span>
+        <b>Статус</b><span>${esc(x.status)}</span>
+      </div>
+      <details><summary class="admin-state">Diagnostic context</summary><pre>${esc(answers)}</pre></details>
+    </article>`;
+  }
+
+  loadBtn.addEventListener('click', load);
+  refreshBtn.addEventListener('click', load);
+})();
+</script>
+</body>
+</html>
