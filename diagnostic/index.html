@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Vibe Release — прототип диагностики</title>
+  <meta name="description" content="Внутренний прототип бесплатной диагностики Vibe Release V2.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <link rel="stylesheet" href="./diagnostic.css">
+</head>
+<body class="diag-page">
+  <a class="skip-link" href="#diagnostic">К диагностике</a>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="../" aria-label="Vibe Release">
+        <img src="../assets/logo.svg" width="30" height="30" alt="">
+        <span>Vibe Release</span>
+      </a>
+      <span class="diag-back">P0 prototype · не опубликован в main</span>
+    </div>
+  </header>
+
+  <main id="diagnostic" class="diag-shell">
+    <div class="diag-top">
+      <a class="diag-back" href="../">← Вернуться на сайт</a>
+    </div>
+
+    <section class="diag-head">
+      <p class="diag-kicker">Бесплатная диагностика · прототип</p>
+      <h1>На каком этапе ваш продукт?</h1>
+      <p>Выберите текущую ситуацию. За 1–2 минуты покажем следующий разумный шаг — без карты и регистрации.</p>
+      <div class="diag-trust" aria-label="Условия">
+        <span>Результат до контактов</span>
+        <span>Без активных проверок без разрешения</span>
+        <span>Предварительная оценка ≠ финальный вердикт</span>
+      </div>
+    </section>
+
+    <section class="diag-card" aria-live="polite">
+      <div id="progress" class="progress-wrap" hidden>
+        <div class="progress-head"><span id="progressLabel">Шаг 1</span><span id="progressPercent">0%</span></div>
+        <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+      </div>
+      <div id="app" class="diag-card-inner"></div>
+    </section>
+  </main>
+
+  <script src="./diagnostic.js" defer></script>
+</body>
+</html>
