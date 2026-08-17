@@ -1,11 +1,11 @@
 # Vibe Release V2 — P0 Smoke Results
 
 Дата: 17.08.2026
-Статус: **LOGIC PASS / BROWSER QA PENDING**.
+Статус: **LOGIC PASS + AUTOMATED BROWSER QA PASS / PRODUCTION QA PENDING**.
 
-Проверен именно deterministic routing/scoring из текущего `diagnostic/diagnostic.js` на 9 заранее зафиксированных persona-сценариях. Это не заменяет браузерный/mobile/keyboard QA.
+Проверены deterministic routing/scoring и реальный frontend `/diagnostic/` через Playwright в GitHub Actions.
 
-## Результат 9/9
+## 1. Logic personas — 9/9 PASS
 
 | Persona | Expected | Actual | Result |
 |---|---|---|---|
@@ -19,53 +19,73 @@
 | R2 — высокий средний, но cross-user UNKNOWN | RED; c3 first | 65 / RED; Top-3: c3, c6, c4 | PASS |
 | R3 — всё CONFIGURED | 50 / YELLOW | 50 / YELLOW | PASS |
 
-## Что отдельно подтвердилось
+## 2. Automated browser QA
 
-### Critical gate работает
-R2 не получает зелёный/жёлтый итог несмотря на средний score 65, потому что `c3 Who sees what` = UNKNOWN. Это требуемое поведение: среднее значение не может скрыть неподтверждённую критическую границу.
+GitHub Actions workflow: `Diagnostic QA`.
+Run ID: `31986505902`.
+Job: `playwright` — **SUCCESS**.
 
-### Weakest-area ordering работает
-Для R2 порядок:
+### Chromium
+**17/17 PASS**.
+
+Проверено:
+- IDEA I1/I2/I3;
+- STUCK S1/S2/S3;
+- READY R1/R2/R3;
+- multi-select max;
+- изменение critical answer через Back с последующим пересчётом;
+- required validation для contact;
+- authorization=false без явной галочки;
+- Clipboard API / copy prompt;
+- keyboard-only базовый путь: stage selector + option;
+- viewport 360px: нет horizontal overflow;
+- viewport 390px: нет horizontal overflow.
+
+### Firefox
+**16 применимых тестов PASS + 1 clipboard-specific test SKIPPED**.
+
+Skip относится к тесту Clipboard, который намеренно проверяется в Chromium с browser permission. Остальные маршруты, validation, keyboard и mobile-width проверки прошли.
+
+## 3. Подтверждённые критические свойства
+
+### Critical gate
+R2 не получает зелёный/жёлтый итог при score 65, потому что `c3 Who sees what` = UNKNOWN. Средний score не скрывает неподтверждённую критическую границу.
+
+### Weakest-area ordering
+R2:
 1. c3 — critical UNKNOWN;
 2. c6 — critical CONFIGURED;
 3. c4 — ordinary CONFIGURED.
 
-Это совпадает с контрактом `critical unknown → critical configured → ordinary unknown → ordinary configured`.
-
-### STUCK routing не предлагает rebuild автоматически
+### STUCK routing
 - нормальный незаконченный repo → FINISH;
-- живой рискованный production → STABILIZE;
-- неизвестное/неработающее состояние → REVIEW.
+- рискованный production → STABILIZE;
+- неизвестное/неработающее состояние → REVIEW;
+- автоматического verdict `переписать с нуля` нет.
 
-В текущей logic нет автоматического verdict `переписать с нуля`.
+### Lead/authorization UX
+- контакт обязателен;
+- обычная заявка READYISH может существовать без authorization;
+- `authorized_for_active_checks=false` передаётся явно;
+- production backend обязан отдельно запрещать active checks без подтверждения права на тестирование.
 
-## Edge logic — инспекция текущего кода
+## 4. Что ещё НЕ считается PASS
 
-- `READYISH` denominator не может быть 0 в нормальном UI: c1/c4/c8/c9/c10/c11/c12 не дают N/A.
-- score считается из финального `state.answers`, поэтому изменение ответа назад должно пересчитать итог по новому state.
-- multi-select ограничивается `max`: лишний пункт не добавляется, выбранный можно снять.
-- prototype lead form использует required для name/contact/consent.
-- authorization checkbox в READYISH не блокирует обычную заявку; payload передаёт `authorized_for_active_checks=false` — active checks должны блокироваться уже production backend.
-
-## Что НЕ протестировано и нельзя называть PASS
-
-Остаётся обязательный ручной/браузерный QA:
-- Chrome desktop;
-- Firefox desktop;
-- Android ~360px;
-- iPhone ~390px;
-- keyboard-only;
-- back/forward visual state;
-- copy prompt через Clipboard API;
-- HTML required validation во всех целевых браузерах;
-- reload/restart UX;
-- реальный median completion time ≤2 min;
+Автоматизированный browser QA не доказывает production readiness. Осталось:
+- WebKit/Safari или реальное iOS-тестирование;
+- ручная визуальная проверка на реальных desktop/mobile устройствах;
+- реальное измерение median completion time, target ≤2 min;
+- реальная доставка lead payload через backend;
 - Telegram test delivery;
-- backend authorization enforcement.
+- backend enforcement authorization;
+- privacy/localization/legal architecture для формы;
+- production error/rate-limit/abuse handling.
 
 ## Verdict
 
-**Core routing/scoring logic: PASS 9/9.**
-**Frontend/product QA overall: NOT YET PASS.**
+**Core routing/scoring: PASS 9/9.**
+**Automated Chromium QA: PASS 17/17.**
+**Automated Firefox QA: PASS 16/16 applicable; 1 Chromium-only clipboard test skipped.**
+**Production QA: NOT YET PASS.**
 
-Следующий engineering gate: preview/runtime → browser matrix → test Telegram delivery → только после этого обсуждать merge в main.
+Следующий gate: legal-safe RF lead backend → test Telegram delivery → production enforcement → final manual/device QA → только затем merge в main.
